@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 
-def baseline_model(filters=1, kernel_size=16, time_window=640):
+def simple_lstm_model(filters=1, kernel_size=16, time_window=640):
     eeg = tf.keras.layers.Input(shape=(time_window, 64))
     env1 = tf.keras.layers.Input(shape=(time_window, 1))
     env2 = tf.keras.layers.Input(shape=(time_window, 1))
@@ -10,8 +10,13 @@ def baseline_model(filters=1, kernel_size=16, time_window=640):
     env1_cut = tf.keras.layers.Lambda(lambda t: t[:, :time_window - kernel_size + 1, :])(env1)
     env2_cut = tf.keras.layers.Lambda(lambda t: t[:, :time_window - kernel_size + 1, :])(env2)
 
-    dot1 = tf.keras.layers.Dot(0, normalize=True)([conv1d, env1_cut])
-    dot2 = tf.keras.layers.Dot(0, normalize=True)([conv1d, env2_cut])
+    lstm = tf.keras.layers.LSTM(64, return_sequences=True, input_shape=(time_window - kernel_size, 1))(conv1d)
+    lstm_dense = tf.keras.layers.Dense(1, activation="sigmoid")(lstm)
+    # out1 = tf.keras.layers.LSTM(16, input_shape=(time_window, 1))(env1)
+    # out2 = tf.keras.layers.LSTM(16, input_shape=(time_window, 1))(env2)
+
+    dot1 = tf.keras.layers.Dot(0, normalize=True)([lstm_dense, env1_cut])
+    dot2 = tf.keras.layers.Dot(0, normalize=True)([lstm_dense, env2_cut])
 
     concat = tf.keras.layers.Concatenate()([dot1, dot2])
     flat = tf.keras.layers.Flatten()(concat)
