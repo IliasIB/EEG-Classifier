@@ -3,8 +3,6 @@ import tensorflow as tf
 
 def joint_autoencoder_model(filters=5, kernel_size=16, time_window=640):
     eeg = tf.keras.layers.Input(shape=(time_window, 64))
-    env1 = tf.keras.layers.Input(shape=(time_window, 1))
-    env2 = tf.keras.layers.Input(shape=(time_window, 1))
 
     # Encoder
     enc = tf.keras.layers.Conv1D(32, kernel_size=3, padding="same")(eeg)

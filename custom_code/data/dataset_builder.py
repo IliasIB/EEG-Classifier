@@ -270,6 +270,54 @@ class Encoder2EnvBatchEqualizer(BatchEqualizer):
         return new_eeg, new_eeg
 
 
+class Joint2EnvBatchEqualizer(BatchEqualizer):
+    """Class to make sure the labels of the are balanced"""
+    def __init__(self, nb_label_outputs=1):
+        """Initialize
+
+        Parameters
+        ----------
+        nb_label_outputs : int
+            How many outputs should be provided. Only usefull if you want to create models in parallel
+            to increase GPU usage
+        """
+        super().__init__()
+        self.prepend_size = None
+        self.nb_label_outputs = nb_label_outputs
+
+    def __call__(self, eeg, good_env, bad_env):
+        """Equalize the labels.
+        This will double the batch size
+
+        Parameters
+        ----------
+        eeg : tf.Tensor
+            The EEG data
+        good_env : tf.Tensor
+            The matched envelope data
+        bad_env : tf.Tensor
+            The mismatched envelope data
+
+        Returns
+        -------
+        tuple(tuple(tf.Tensor, tf.Tensor, tf.Tensor), tuple(tf.Tensor,...))
+            A tuple formatted according to Keras fit parameters. First element is the inputs to the model,
+            second element is the ouputs (labels) for this model. If nb_label_outputs > 1,
+            then there will be duplicates of this output
+        """
+        new_eeg = tf.concat([eeg, eeg], axis=0)
+        env1 = tf.concat([good_env, bad_env], axis=0)
+        env2 = tf.concat([bad_env, good_env], axis=0)
+        labels = tf.concat([
+            tf.tile(tf.constant([[1]]), [tf.shape(eeg)[0], 1]),
+            tf.tile(tf.constant([[0]]), [tf.shape(eeg)[0], 1]),
+        ], axis=0)
+        all_labels = []
+        for x in range(self.nb_label_outputs):
+            all_labels += [labels]
+        return (new_eeg, env1, env2), (all_labels, new_eeg)
+
+
 def sort_dict_items_by_train(d, train_name="train"):
     """Get the items of d sorted by the train_name"""
     return sorted(list(d.items()), key=lambda s: s[0] == train_name,
