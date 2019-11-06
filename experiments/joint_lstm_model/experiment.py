@@ -41,13 +41,13 @@ if __name__ == "__main__":
     # of steps. If data has run out, it will just issue a warning and continue. To count how many steps were taken, the
     # StepCounter is used
     train_s = StepCounter()
-    model.fit(ds_train, epochs=1, steps_per_epoch=1000, callbacks=[train_s])
+    model.fit(ds_train, epochs=1, steps_per_epoch=200, callbacks=[train_s])
     validation_s = StepCounter()
-    model.fit(ds_validation, epochs=1, steps_per_epoch=1000, callbacks=[validation_s])
+    model.fit(ds_validation, epochs=1, steps_per_epoch=200, callbacks=[validation_s])
 
     model.fit(
         ds_train.repeat(),
-        epochs=10,
+        epochs=2,
         steps_per_epoch=1000,
         validation_data=ds_validation.repeat(),
         validation_steps=validation_s.counter,

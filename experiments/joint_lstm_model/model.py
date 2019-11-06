@@ -15,10 +15,9 @@ def joint_lstm_model(filters=1, kernel_size=16, time_window=640):
     env2 = tf.keras.layers.Input(shape=(time_window, 1), name="input_env2")
 
     encoder = model.get_layer("max_pooling1d_1").output
+    # lstm_flat = tf.keras.layers.Flatten()(encoder)
     lstm_pre = tf.keras.layers.Dense(1, activation="sigmoid")(encoder)
-    # lstm = tf.keras.layers.LSTM(8, input_shape=(25, 1))(lstm_pre)
-
-    # lstm_flat = tf.keras.layers.Flatten()(lstm_dense)
+    # lstm = tf.keras.layers.LSTM(16, input_shape=(25, 16))(encoder)
 
     flat1 = tf.keras.layers.Flatten()(env1)
     flat2 = tf.keras.layers.Flatten()(env2)
