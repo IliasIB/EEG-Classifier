@@ -108,4 +108,3 @@ This data is already preprocessed and normalized. The preprocessing steps are:
     * Filtering between [0.5 - 32]Hz
     * Downsampling to 64Hz
     * Standardizing per recording (subtracting mean, dividing by std)
-    # EEG-Classifier
