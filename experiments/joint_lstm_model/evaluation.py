@@ -3,7 +3,7 @@ import tensorflow as tf
 import json
 
 
-from custom_code.data.dataset_builder import TFRecordsDatasetBuilder, Encoder2EnvBatchEqualizer
+from custom_code.data.dataset_builder import TFRecordsDatasetBuilder, Default2EnvBatchEqualizer
 
 
 def evaluate():
@@ -15,8 +15,8 @@ def evaluate():
     evaluation = {}
 
     ds_creator = TFRecordsDatasetBuilder(folder=data_folder)
-    test_datasets = ds_creator.prepare("test", batch_equalizer=Encoder2EnvBatchEqualizer(),
-                                       batch_size=64, window=100)
+    test_datasets = ds_creator.prepare("test", batch_equalizer=Default2EnvBatchEqualizer(),
+                                       batch_size=64, window=640)
 
     model = tf.keras.models.load_model(os.path.join(cwd, "output", "best_model.h5"))
 
