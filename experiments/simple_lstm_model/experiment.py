@@ -26,7 +26,7 @@ if __name__ == "__main__":
     root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     data_folder = os.path.join(root, "dataset", "starting_data")
     ds_creator = TFRecordsDatasetBuilder(folder=data_folder)
-    time_window = 100
+    time_window = 640
 
     model = simple_lstm_model(time_window=time_window)
 
@@ -41,14 +41,14 @@ if __name__ == "__main__":
     # of steps. If data has run out, it will just issue a warning and continue. To count how many steps were taken, the
     # StepCounter is used
     train_s = StepCounter()
-    model.fit(ds_train, epochs=1, steps_per_epoch=200, callbacks=[train_s])
+    model.fit(ds_train, epochs=1, steps_per_epoch=sys.maxsize, callbacks=[train_s])
     validation_s = StepCounter()
-    model.fit(ds_validation, epochs=1, steps_per_epoch=200, callbacks=[validation_s])
+    model.fit(ds_validation, epochs=1, steps_per_epoch=sys.maxsize, callbacks=[validation_s])
 
     model.fit(
         ds_train.repeat(),
-        epochs=5,
-        steps_per_epoch=200,
+        epochs=500,
+        steps_per_epoch=train_s.counter,
         validation_data=ds_validation.repeat(),
         validation_steps=validation_s.counter,
         callbacks=[

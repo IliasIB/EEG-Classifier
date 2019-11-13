@@ -6,17 +6,18 @@ def simple_lstm_model(filters=1, kernel_size=16, time_window=640):
     env1 = tf.keras.layers.Input(shape=(time_window, 1))
     env2 = tf.keras.layers.Input(shape=(time_window, 1))
 
-    conv1d = tf.keras.layers.Conv1D(filters, kernel_size=kernel_size)(eeg)
-    env1_cut = tf.keras.layers.Lambda(lambda t: t[:, :time_window - kernel_size + 1, :])(env1)
-    env2_cut = tf.keras.layers.Lambda(lambda t: t[:, :time_window - kernel_size + 1, :])(env2)
+    conv1d = tf.keras.layers.Conv1D(filters, strides=6, kernel_size=kernel_size)(eeg)
+    conv1d_layer = tf.keras.layers.Conv1D(filters, strides=6, kernel_size=kernel_size)
+    conv1d_env1 = conv1d_layer(env1)
+    conv1d_env2 = conv1d_layer(env2)
 
-    lstm = tf.keras.layers.LSTM(64, return_sequences=True, input_shape=(time_window - kernel_size, 1))(conv1d)
-    lstm_dense = tf.keras.layers.Dense(1, activation="sigmoid")(lstm)
-    # out1 = tf.keras.layers.LSTM(16, input_shape=(time_window, 1))(env1)
-    # out2 = tf.keras.layers.LSTM(16, input_shape=(time_window, 1))(env2)
+    lstm1 = tf.keras.layers.Bidirectional(tf.keras.layers.CuDNNLSTM(15))(conv1d)
+    lstm_layer = tf.keras.layers.Bidirectional(tf.keras.layers.CuDNNLSTM(15))
+    lstm_env1 = lstm_layer(conv1d_env1)
+    lstm_env2 = lstm_layer(conv1d_env2)
 
-    dot1 = tf.keras.layers.Dot(0, normalize=True)([lstm_dense, env1_cut])
-    dot2 = tf.keras.layers.Dot(0, normalize=True)([lstm_dense, env2_cut])
+    dot1 = tf.keras.layers.Dot(1, normalize=True)([lstm1, lstm_env1])
+    dot2 = tf.keras.layers.Dot(1, normalize=True)([lstm1, lstm_env2])
 
     concat = tf.keras.layers.Concatenate()([dot1, dot2])
     flat = tf.keras.layers.Flatten()(concat)
