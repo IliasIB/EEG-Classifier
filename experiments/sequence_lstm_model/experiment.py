@@ -13,7 +13,7 @@ tf.keras.backend.set_session(session)
 
 from custom_code.keras.callbacks import StepCounter
 from custom_code.data.dataset_builder import TFRecordsDatasetBuilder, Default2EnvBatchEqualizer
-from experiments.simple_lstm_model.model import simple_lstm_model
+from experiments.sequence_lstm_model.model import simple_lstm_model
 
 
 def filter(paths):

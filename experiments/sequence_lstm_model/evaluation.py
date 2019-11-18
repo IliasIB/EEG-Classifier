@@ -9,6 +9,7 @@ config.gpu_options.allow_growth = True
 session = tf.compat.v1.Session(config=config)
 tf.keras.backend.set_session(session)
 
+
 from custom_code.data.dataset_builder import TFRecordsDatasetBuilder, Default2EnvBatchEqualizer
 
 
@@ -22,7 +23,7 @@ def evaluate():
 
     ds_creator = TFRecordsDatasetBuilder(folder=data_folder)
     test_datasets = ds_creator.prepare("test", batch_equalizer=Default2EnvBatchEqualizer(),
-                                       batch_size=64)
+                                       batch_size=64, window=640)
 
     model = tf.keras.models.load_model(os.path.join(cwd, "output", "best_model.h5"))
 
