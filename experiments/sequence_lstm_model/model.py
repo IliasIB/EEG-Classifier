@@ -12,8 +12,8 @@ def simple_lstm_model(filters=1, kernel_size=16, time_window=640):
     conv1d_env1 = conv1d_layer(env1)
     conv1d_env2 = conv1d_layer(env2)
 
-    lstm1 = tf.keras.layers.Bidirectional(tf.keras.layers.CuDNNLSTM(5, return_sequences=True))(conv1d2)
-    lstm2 = tf.keras.layers.Bidirectional(tf.keras.layers.CuDNNLSTM(5, return_sequences=True))(lstm1)
+    lstm1 = tf.keras.layers.Bidirectional(tf.keras.layers.CuDNNLSTM(15, return_sequences=True))(conv1d2)
+    lstm2 = tf.keras.layers.Bidirectional(tf.keras.layers.CuDNNLSTM(10, return_sequences=True))(lstm1)
     lstm3 = tf.keras.layers.Bidirectional(tf.keras.layers.CuDNNLSTM(5, return_sequences=True))(lstm2)
     lstm_layer = tf.keras.layers.Bidirectional(tf.keras.layers.CuDNNLSTM(5, return_sequences=True))
     lstm_env1 = lstm_layer(conv1d_env1)
