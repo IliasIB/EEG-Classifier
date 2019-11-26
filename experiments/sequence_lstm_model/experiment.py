@@ -47,14 +47,14 @@ if __name__ == "__main__":
 
     model.fit(
         ds_train.repeat(),
-        epochs=500,
+        epochs=50,
         steps_per_epoch=train_s.counter,
         validation_data=ds_validation.repeat(),
         validation_steps=validation_s.counter,
         callbacks=[
             tf.keras.callbacks.ModelCheckpoint(os.path.join(cwd, "output", "best_model.h5"), save_best_only=True),
             tf.keras.callbacks.CSVLogger(os.path.join(cwd, "output", "training.log")),
-            tf.keras.callbacks.EarlyStopping(monitor="val_acc", mode="max", verbose=1, patience=4)
+            tf.keras.callbacks.EarlyStopping(monitor="val_acc", mode="max", verbose=1, patience=8)
         ],
         initial_epoch=1
     )
