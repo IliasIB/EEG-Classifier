@@ -26,7 +26,7 @@ if __name__ == "__main__":
     root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     data_folder = os.path.join(root, "dataset", "starting_data")
     ds_creator = TFRecordsDatasetBuilder(folder=data_folder)
-    time_window = 640
+    time_window = 320
 
     model = simple_lstm_model(time_window=time_window)
 
