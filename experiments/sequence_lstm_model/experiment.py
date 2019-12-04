@@ -54,7 +54,7 @@ if __name__ == "__main__":
         callbacks=[
             tf.keras.callbacks.ModelCheckpoint(os.path.join(cwd, "output", "best_model.h5"), save_best_only=True),
             tf.keras.callbacks.CSVLogger(os.path.join(cwd, "output", "training.log")),
-            tf.keras.callbacks.EarlyStopping(monitor="val_acc", mode="max", verbose=1, patience=8)
+            tf.keras.callbacks.EarlyStopping(monitor="val_acc", mode="max", verbose=1, patience=4)
         ],
         initial_epoch=1
     )
