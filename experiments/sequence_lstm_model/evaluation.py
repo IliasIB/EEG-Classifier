@@ -23,7 +23,7 @@ def evaluate():
 
     ds_creator = TFRecordsDatasetBuilder(folder=data_folder)
     test_datasets = ds_creator.prepare("test", batch_equalizer=Default2EnvBatchEqualizer(),
-                                       batch_size=64, window=320)
+                                       batch_size=64, window=128)
 
     model = tf.keras.models.load_model(os.path.join(cwd, "output", "best_model.h5"))
 
