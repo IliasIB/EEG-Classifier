@@ -12,14 +12,13 @@ def simple_lstm_model(filters=1, kernel_size=16, time_window=640):
     conv1d_env1 = conv1d_layer(env1)
     conv1d_env2 = conv1d_layer(env2)
 
-    # lstm1 = tf.keras.layers.Bidirectional(tf.keras.layers.CuDNNLSTM(8, return_sequences=True))(conv1d2)
-    lstm3 = tf.keras.layers.Bidirectional(tf.keras.layers.CuDNNLSTM(16, return_sequences=True))(conv1d2)
+    lstm = tf.keras.layers.Bidirectional(tf.keras.layers.CuDNNLSTM(16, return_sequences=True))(conv1d2)
     lstm_layer = tf.keras.layers.CuDNNLSTM(32, return_sequences=True)
     lstm_env1 = lstm_layer(conv1d_env1)
     lstm_env2 = lstm_layer(conv1d_env2)
 
-    dot1 = tf.keras.layers.Dot(1, normalize=True)([lstm3, lstm_env1])
-    dot2 = tf.keras.layers.Dot(1, normalize=True)([lstm3, lstm_env2])
+    dot1 = tf.keras.layers.Dot(1, normalize=True)([lstm, lstm_env1])
+    dot2 = tf.keras.layers.Dot(1, normalize=True)([lstm, lstm_env2])
 
     concat = tf.keras.layers.Concatenate()([dot1, dot2])
     flat = tf.keras.layers.Flatten()(concat)

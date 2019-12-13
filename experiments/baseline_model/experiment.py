@@ -26,14 +26,15 @@ if __name__ == "__main__":
     root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     data_folder = os.path.join(root, "dataset", "starting_data")
     ds_creator = TFRecordsDatasetBuilder(folder=data_folder)
+    time_window = 640
 
-    model = baseline_model()
+    model = baseline_model(time_window=time_window)
 
     ds_train = ds_creator.prepare("train", batch_equalizer=Default2EnvBatchEqualizer(),
-                                  batch_size=64)
+                                  batch_size=64, window=time_window)
     ds_validation = ds_creator.prepare("validation",
                                        batch_equalizer=Default2EnvBatchEqualizer(),
-                                       batch_size=64)
+                                       batch_size=64, window=time_window)
 
     # TFRecords don't have metadata and depending on the building of the dataset the length might be different
     # To dynamically determine how many steps we should take, we let keras try to fit the model with a very high number
