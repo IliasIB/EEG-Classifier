@@ -25,7 +25,7 @@ def filter(paths):
 
 
 if __name__ == "__main__":
-    for i in range(53, 54):
+    for i in range(1, 54):
         if i == 8 or i == 19 or i == 22 or i == 26 or i == 27:
             continue
         if i < 10:
@@ -42,12 +42,12 @@ if __name__ == "__main__":
         model = load_model('output/two_second_model.h5')
         model.summary()
 
-        initial_weights = model.get_weights()
-        session = K.get_session()
-        new_weights = [glorot_uniform()(initial_weights[i].shape).numpy()
-                       if i == 0 or i == 1 or i == 2 or i == 3 else initial_weights[i]
-                       for i in range(len(initial_weights))]
-        model.set_weights(new_weights)
+        # initial_weights = model.get_weights()
+        # session = K.get_session()
+        # new_weights = [glorot_uniform()(initial_weights[i].shape).numpy()
+        #                if i == 0 or i == 1 or i == 2 or i == 3 else initial_weights[i]
+        #                for i in range(len(initial_weights))]
+        # model.set_weights(new_weights)
 
         # Freeze non-spatial layers
         # model.get_layer(name="conv1d_1").trainable = False
