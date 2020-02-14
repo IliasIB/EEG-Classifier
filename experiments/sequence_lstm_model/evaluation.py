@@ -18,14 +18,13 @@ def evaluate():
     root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     data_folder = os.path.join(root, "dataset", "starting_data")
 
-
     evaluation = {}
 
     ds_creator = TFRecordsDatasetBuilder(folder=data_folder)
     test_datasets = ds_creator.prepare("test", batch_equalizer=Default2EnvBatchEqualizer(),
-                                       batch_size=64, window=640)
+                                       batch_size=64, window=128)
 
-    model = tf.keras.models.load_model(os.path.join(cwd, "output", "best_model.h5"))
+    model = tf.keras.models.load_model(os.path.join(cwd, "output", "two_second_model.h5"))
 
     for subject, ds_test in test_datasets.items():
         evaluation[subject] = dict(zip(model.metrics_names, model.evaluate(ds_test)))

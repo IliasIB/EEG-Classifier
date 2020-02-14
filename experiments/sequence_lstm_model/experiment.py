@@ -26,7 +26,7 @@ if __name__ == "__main__":
     root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     data_folder = os.path.join(root, "dataset", "starting_data")
     ds_creator = TFRecordsDatasetBuilder(folder=data_folder)
-    time_window = 640
+    time_window = 128
 
     model = simple_lstm_model(time_window=time_window)
 
@@ -52,7 +52,7 @@ if __name__ == "__main__":
         validation_data=ds_validation.repeat(),
         validation_steps=validation_s.counter,
         callbacks=[
-            tf.keras.callbacks.ModelCheckpoint(os.path.join(cwd, "output", "best_model.h5"), save_best_only=True),
+            tf.keras.callbacks.ModelCheckpoint(os.path.join(cwd, "output", "two_second_model.h5"), save_best_only=True),
             tf.keras.callbacks.CSVLogger(os.path.join(cwd, "output", "training.log")),
             tf.keras.callbacks.EarlyStopping(monitor="val_acc", mode="max", verbose=1, patience=4)
         ],
