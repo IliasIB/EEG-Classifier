@@ -17,7 +17,7 @@ def evaluate():
     evaluation_general = {}
     cwd = os.path.dirname(os.path.abspath(__file__))
     root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    for i in range(1, 8):
+    for i in range(1, 54):
         if i == 8 or i == 19 or i == 22 or i == 26 or i == 27:
             continue
         if i < 10:

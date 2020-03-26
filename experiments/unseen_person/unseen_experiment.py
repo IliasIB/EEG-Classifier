@@ -25,7 +25,7 @@ def filter(paths):
 
 
 def transfer_learn():
-    for i in range(7, 8):
+    for i in range(1, 54):
         if i == 8 or i == 19 or i == 22 or i == 26 or i == 27:
             continue
         if i < 10:
@@ -42,10 +42,10 @@ def transfer_learn():
         model = load_model('output/general_models/' + subject_name + '_model.h5')
         model.summary()
 
-        model.get_layer(name="conv1d_17").trainable = False
-        model.get_layer(name="bidirectional_5").trainable = False
-        model.get_layer(name="cu_dnnlstm_11").trainable = False
-        model.get_layer(name="dense_5").trainable = False
+        model.layers[5].trainable = False
+        model.layers[6].trainable = False
+        model.layers[7].trainable = False
+        model.layers[12].trainable = False
 
         model.compile(optimizer=tf.keras.optimizers.Adam(), metrics=["acc"], loss=["binary_crossentropy"])
 
@@ -66,7 +66,7 @@ def transfer_learn():
 
         model.fit(
             ds_train.repeat(),
-            epochs=50,
+            epochs=100,
             steps_per_epoch=train_s.counter,
             validation_data=ds_validation.repeat(),
             validation_steps=validation_s.counter,
@@ -74,8 +74,9 @@ def transfer_learn():
                 tf.keras.callbacks.ModelCheckpoint(os.path.join(cwd, "output", "transfer_models",
                                                                 "{}_model.h5".format(subject_name)),
                                                    save_best_only=True),
-                tf.keras.callbacks.CSVLogger(os.path.join(cwd, "output", "transfer_training.log")),
-                tf.keras.callbacks.EarlyStopping(monitor="val_acc", mode="max", verbose=1, patience=2)
+                tf.keras.callbacks.CSVLogger(os.path.join(cwd, "output", "training_logs",
+                                                          "transfer_training{}.log".format(str(i)))),
+                tf.keras.callbacks.EarlyStopping(monitor="val_acc", mode="max", verbose=1, patience=15)
             ],
             initial_epoch=1
         )
@@ -83,7 +84,7 @@ def transfer_learn():
 
 def train_general_models():
     time_window = 128
-    for i in range(2, 54):
+    for i in range(30, 54):
         if i == 8 or i == 19 or i == 22 or i == 26 or i == 27:
             continue
         if i < 10:
@@ -108,7 +109,7 @@ def train_general_models():
 
         model.fit(
             ds_train.repeat(),
-            epochs=50,
+            epochs=2,
             steps_per_epoch=train_s.counter,
             validation_data=ds_validation.repeat(),
             validation_steps=validation_s.counter,
