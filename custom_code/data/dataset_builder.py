@@ -1,6 +1,5 @@
 import glob
 import os
-
 import tensorflow as tf
 from loguru import logger
 
@@ -83,7 +82,7 @@ class TFRecordsDatasetBuilder(object):
         return paths
 
     def prepare(self, set_name, window=640, window_overlap=0.9, batch_size=1, batch_equalizer=None,
-                parser=Default2EnvParser()):
+                parser=Default2EnvParser(), cutoff=None):
         """Prepare a dataset for a specific set
 
         Parameters
@@ -112,17 +111,17 @@ class TFRecordsDatasetBuilder(object):
                 datasets[subject] = self._prepare(
                     [x for x in self.file_mapping[set_name] if subject == x.split(self.separator)[1]], window=window,
                     window_overlap=window_overlap, batch_size=batch_size,
-                    batch_equalizer=batch_equalizer, parser=parser
+                    batch_equalizer=batch_equalizer, parser=parser, cutoff=cutoff
                 )
             return datasets
         else:
             return self._prepare(
                 self.file_mapping[set_name], window=window, window_overlap=window_overlap, batch_size=batch_size,
-                batch_equalizer=batch_equalizer, parser=parser
+                batch_equalizer=batch_equalizer, parser=parser, cutoff=cutoff
             )
 
     def _prepare(self, file_paths, window=640, window_overlap=0.9, batch_size=1, batch_equalizer=None,
-                 parser=Default2EnvParser()):
+                 parser=Default2EnvParser(), cutoff=None):
         """Prepare a dataset for a specific set
 
         Parameters
@@ -222,108 +221,10 @@ class Default2EnvBatchEqualizer(BatchEqualizer):
         return (new_eeg, env1, env2), tuple(all_labels)
 
 
-class Encoder2EnvBatchEqualizer(BatchEqualizer):
-    """Class to make sure the labels of the are balanced"""
-    def __init__(self, nb_label_outputs=1):
-        """Initialize
-
-        Parameters
-        ----------
-        nb_label_outputs : int
-            How many outputs should be provided. Only usefull if you want to create models in parallel
-            to increase GPU usage
-        """
-        super().__init__()
-        self.prepend_size = None
-        self.nb_label_outputs = nb_label_outputs
-
-    def __call__(self, eeg, good_env, bad_env):
-        """Equalize the labels.
-        This will double the batch size
-
-        Parameters
-        ----------
-        eeg : tf.Tensor
-            The EEG data
-        good_env : tf.Tensor
-            The matched envelope data
-        bad_env : tf.Tensor
-            The mismatched envelope data
-
-        Returns
-        -------
-        tuple(tuple(tf.Tensor, tf.Tensor, tf.Tensor), tuple(tf.Tensor,...))
-            A tuple formatted according to Keras fit parameters. First element is the inputs to the model,
-            second element is the ouputs (labels) for this model. If nb_label_outputs > 1,
-            then there will be duplicates of this output
-        """
-        new_eeg = tf.concat([eeg, eeg], axis=0)
-        env1 = tf.concat([good_env, bad_env], axis=0)
-        env2 = tf.concat([bad_env, good_env], axis=0)
-        labels = tf.concat([
-            tf.tile(tf.constant([[1]]), [tf.shape(eeg)[0], 1]),
-            tf.tile(tf.constant([[0]]), [tf.shape(eeg)[0], 1]),
-        ], axis=0)
-        all_labels = []
-        for x in range(self.nb_label_outputs):
-            all_labels += [labels]
-        return new_eeg, new_eeg
-
-
-class Joint2EnvBatchEqualizer(BatchEqualizer):
-    """Class to make sure the labels of the are balanced"""
-    def __init__(self, nb_label_outputs=1):
-        """Initialize
-
-        Parameters
-        ----------
-        nb_label_outputs : int
-            How many outputs should be provided. Only usefull if you want to create models in parallel
-            to increase GPU usage
-        """
-        super().__init__()
-        self.prepend_size = None
-        self.nb_label_outputs = nb_label_outputs
-
-    def __call__(self, eeg, good_env, bad_env):
-        """Equalize the labels.
-        This will double the batch size
-
-        Parameters
-        ----------
-        eeg : tf.Tensor
-            The EEG data
-        good_env : tf.Tensor
-            The matched envelope data
-        bad_env : tf.Tensor
-            The mismatched envelope data
-
-        Returns
-        -------
-        tuple(tuple(tf.Tensor, tf.Tensor, tf.Tensor), tuple(tf.Tensor,...))
-            A tuple formatted according to Keras fit parameters. First element is the inputs to the model,
-            second element is the ouputs (labels) for this model. If nb_label_outputs > 1,
-            then there will be duplicates of this output
-        """
-        new_eeg = tf.concat([eeg, eeg], axis=0)
-        env1 = tf.concat([good_env, bad_env], axis=0)
-        env2 = tf.concat([bad_env, good_env], axis=0)
-        labels = tf.concat([
-            tf.tile(tf.constant([[1]]), [tf.shape(eeg)[0], 1]),
-            tf.tile(tf.constant([[0]]), [tf.shape(eeg)[0], 1]),
-        ], axis=0)
-        all_labels = []
-        for x in range(self.nb_label_outputs):
-            all_labels += [labels]
-        return (new_eeg, env1, env2), (all_labels, new_eeg)
-
-
 def sort_dict_items_by_train(d, train_name="train"):
     """Get the items of d sorted by the train_name"""
     return sorted(list(d.items()), key=lambda s: s[0] == train_name,
                   reverse=True)
-
-
 
 
 def test_dataset(ds):
@@ -350,3 +251,12 @@ def test_dataset(ds):
 
         except tf.errors.OutOfRangeError:
             pass
+
+
+subjects = ["2019_C2DNN_1", "2019_C2DNN_2", "2019_C2DNN_3", "2019_C2DNN_4", "2019_C2DNN_5", "2019_C2DNN_6",
+            "2019_C2DNN_7", "2019_C2DNN_9", "2019_C2DNN_10", "2019_C2DNN_11", "2019_C2DNN_12", "2019_C2DNN_13",
+            "2019_C2DNN_14", "2019_C2DNN_15", "2019_C2DNN_16", "2019_C2DNN_17", "2019_C2DNN_18", "2019_C2DNN_20",
+            "2019_C2DNN_21", "2019_C2DNN_23", "2019_C2DNN_24", "2019_C2DNN_25", "2019_C2DNN_28", "2019_C2DNN_29",
+            "2019_C2DNN_30", "A05S09", "B30K04", "E03C02", "E07S07", "E16D09", "E26L12", "G12A10", "J09H12", "J27V07",
+            "L02J10", "L16W05", "L27G06", "L30P03", "M12C10", "M25G07", "M27J04", "P27T02", "S06L11", "L07N05",
+            "S14S04", "S16T09", "S23T01", "V09L10"]
