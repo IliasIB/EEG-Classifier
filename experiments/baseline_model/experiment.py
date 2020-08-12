@@ -1,28 +1,28 @@
 import os
+import argparse
 from custom_code.data.dataset_builder import Default2EnvBatchEqualizer
 from experiments.baseline_model.model import baseline_model
 from custom_code.tensorflow.helper import initialize, train_model
 
 initialize()
 
-
-def filter(paths):
-    # Just a sorting operation to make sure that every batch has data from different subjects
-    return sorted(paths, key=lambda x: x.split("_-_")[-1])
-
-
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Train the baseline model')
+    parser.add_argument('--window', '--w', metavar='TIME_WINDOW', type=int,
+                        help='size of window to train the model on', required=True)
+    parser.add_argument('--epochs', '--e', metavar='EPOCHS', type=int,
+                        help='amount of epochs to train the model', required=True)
+    parser.add_argument('--batch', '--b', metavar='BATCH_SIZE', type=int,
+                        help='size of batch to use during training', required=True)
+    parser.add_argument('--band', '--B', metavar='BAND', type=str, choices=['full', 'delta', 'theta', 'delta_theta'],
+                        help='which band(s) to use for training (%(choices))', required=True)
+    args = parser.parse_args()
+
     cwd = os.path.dirname(os.path.abspath(__file__))
     root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-    data_folder = os.path.join(root, "dataset", "full")
-
-    time_window = 640
-    batch_size = 64
-    epochs = 20
-    batch_equalizer = Default2EnvBatchEqualizer()
-    model_location = os.path.join(cwd, "output", "model.h5")
-    log_location = os.path.join(cwd, "output", "training.log")
-    model = baseline_model(time_window=time_window)
-
-    train_model(model, epochs, model_location, log_location, data_folder, batch_size, time_window, batch_equalizer)
+    train_model(model=baseline_model(time_window=args.window), epochs=args.epochs,
+                model_location=os.path.join(cwd, "output", "model_{}_{}.h5".format(args.window, args.band)),
+                log_location=os.path.join(cwd, "output", "training_{}_{}.log".format(args.window, args.band)),
+                data_folder=os.path.join(root, "dataset", args.band), batch_size=args.batch, time_window=args.window,
+                batch_equalizer=Default2EnvBatchEqualizer())

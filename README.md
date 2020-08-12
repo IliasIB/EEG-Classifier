@@ -1,58 +1,15 @@
-Structure of this toolkit
-===
+# Match/Mismatch Prediction Between Speech Stimuli and EEG Using Deep Transfer Learning
+This repository is an implementation of the thesis Match/Mismatch Prediction Between Speech Stimuli and EEG Using Deep Transfer Learning.
 
-To get you started and to make sure that code will be a bit organized, we propose following structure.
+## Structure
+This project is structured in the following way:
+* **custom_code** contains helper functions used for the experiments.
+* **experiments** contains the different experiments that were performed, which are the baseline_model, recurrent_model and transfer_model. All experiments have the following files that can be used:
+  * **experiment.py** can be run with the respective parameters to execute the experiment and thus train the models (use -h to get a list of the parameters required)
+  * **evaluation.py** can be run with the respective parameters to execute the evaluation of the model trained during the experiment (use -h to get a list of the parameters required)
+  * **visualization.ipynb** is a notebook that contains the visualizations made from the experiments that were done (this should only be run after executing the necessary experiments and evaluations with the correct parameters)
 
-```
-thesis_template/
-├── custom_code
-│   ├── data
-│   │   └── dataset_builder.py
-│   └── keras
-│       └── callbacks.py
-├── dataset
-│   └── starting_data
-├── experiments
-│   └── baseline_model
-│       ├── evaluation.py
-│       ├── experiment.py
-│       ├── images
-│       ├── model.py
-│       ├── output
-│       │   ├── best_model.h5
-│       │   ├── eval.json
-│       │   └── training.log
-│       └── visualization.ipynb
-├── extra_reports
-├── .gitignore
-├── README.md
-└── requirements.txt
-```
-In `custom_code`, you can put your more general purpose code, used by different experiments.
-In the `custom_code/data/dataset_builder.py` file, you can find code to create datasets.
-
-
-In the `dataset` directory, the datasets are stored. The `start_dataset` folder contains all `.tfrecords` for the starting dataset.
-
-
-In the experiment folder, all your experimentation will be contained.
-For each experiment, at least 3 files should be present: 
-`experiment.py`, `model.py` and `visuzalization.py` as well as one folder: `output`.
-`model.py` will contain the code to construct your model.
-If `experiment.py` is run, your model should be trained. 
-Make sure to always save your model in the `output` folder (preferably as `model.h5`).
-If `evaluation.py` is run, your model will be evaluated. 
-The results of this evaluation (accuracy, loss,...) should be saved in the `output` folder (preferably as `evaluation.json`).
-In  `visualization.ipynb` you can create a nice report of your experimentation with some cool visualizations.
-
-In the `extra_reports` folder, you can put additional jupyter notebooks, comparing results between experiments
-
-
-To get you started, a `requirements.txt` file is also provided. 
-
-
-Programming
-===
+## Installation
 You can use this file to install dependencies with pip like this:
 ```
 pip3 install -r requirements.txt
@@ -62,49 +19,12 @@ or with conda:
 conda install --file requirements.txt
 ```
 
-Be aware that this toolkit was tested with Python 3.6 and uses the `tensorflow` framework.
-We suggest using the `keras` API of tensorflow, which is easy-to-use.
+Be aware that this project was tested with Python 3.6 and uses the `tensorflow` framework with version 1.14. A guide to installing tensorflow can be found at https://www.tensorflow.org/install. Take care to install the correct version.
 
-**You will need to install tensorflow-gpu separately if you want to train your models on the gpu, it is not included in the requirements.txt file**
-
-Data structure
----
-The data we provide are stored in .tfrecords.
-
-Data was collected by letting normal hearing people listen to natural running Flemish speech while recording their EEG.
-They listened to 8 (fairytale) stories of 15 minutes. These 8 stories are not available for every subject, due too malfunction of recording/preprocessing.
-
-We split each recording in 3 sets: a training (80% of the data), validation (10% of the data) and test set (10% of the data).
-The test and validation set are both extracted from the middle of the recording, as it is unprobable for edge-effects to occur there.
-
-Each `.tfrecords` file has the same naming scheme:
+Before running any experiments make sure your PYTHONPATH is set correctly to the root:
 ```
-{set_name}_-_{subject-code}_-_{story}.tfrecords
-
-e.g.
-train_-_2019_C2DNN_22_-_MILAN.tfrecords
+export PYTHONPATH=/path/to/project:$PYTHONPATH
 ```
 
-Every tf.Example (~=sample) in the tfrecords has 3 features:
-* `eeg`: A sample of EEG data
-* `good_env`: A sample of time-aligned (=matched) stimulus envelope
-* `bad_env`: A sample of stimulus envelope taken 11s in the future (=mis-matched)
-
-## Preprocessing
-
-This data is already preprocessed and normalized. The preprocessing steps are:
-
-* For the EEG:
-    * Downsampling to 1Khz
-    * Artefact rejection with a multi channel Wiener filter (removing eyeblinks)
-    * Filtering between [0.5 - 32]Hz
-    * Downsampling to 64Hz
-    * Standardizing per recording (subtracting mean, dividing by std)
-    
-* For the Envelope
-    * Envelope estimation with gammatone filterbank
-    * Downsampling to 1Khz
-    * Artefact rejection with a multi channel Wiener filter (removing eyeblinks)
-    * Filtering between [0.5 - 32]Hz
-    * Downsampling to 64Hz
-    * Standardizing per recording (subtracting mean, dividing by std)
+## Weights
+Although the dataset cannot be provided, the weights for all experiments can be downloaded from https://www.dropbox.com/s/h5ct9tpylkp2n4z/weights.zip?dl=0. Simply extract the contents of the zip file to the root of the folder.

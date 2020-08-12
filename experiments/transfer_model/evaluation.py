@@ -1,39 +1,64 @@
+import argparse
 import os
-import tensorflow as tf
 import json
+import tensorflow as tf
+from custom_code.tensorflow.helper import initialize, test_model
+from custom_code.data.dataset_builder import Default2EnvBatchEqualizer, subjects
 
-### Necessary for optimal performance on GPU's
-tf.compat.v1.enable_v2_behavior()
-config = tf.compat.v1.ConfigProto()
-config.gpu_options.allow_growth = True
-session = tf.compat.v1.Session(config=config)
-tf.keras.backend.set_session(session)
+initialize()
 
 
-from custom_code.data.dataset_builder import TFRecordsDatasetBuilder, Default2EnvBatchEqualizer
-
-
-def evaluate():
-    cwd = os.path.dirname(os.path.abspath(__file__))
-    root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    data_folder = os.path.join(root, "dataset", "starting_data")
-
+def evaluate_general():
     evaluation = {}
+    for name in subjects:
+        def subject_filter(paths):
+            return [path for path in paths if path.split("_-_")[1] != name]
 
-    ds_creator = TFRecordsDatasetBuilder(folder=data_folder)
-    test_datasets = ds_creator.prepare("test", batch_equalizer=Default2EnvBatchEqualizer(),
-                                       batch_size=64, window=128)
+        general_model = tf.keras.models.load_model(os.path.join(cwd, "output"
+                                                                     "model_general_{}_{}_{}.h5".format(name,
+                                                                                                        args.window,
+                                                                                                        args.band)))
+        single_eval = test_model(model=general_model, eval_location="", data_folder=data_folder, batch_size=args.batch,
+                                 time_window=args.window, batch_equalizer=Default2EnvBatchEqualizer(),
+                                 filters=[subject_filter], save=False)
 
-    model = tf.keras.models.load_model(os.path.join(cwd, "output", "two_second_model.h5"))
+        evaluation[name] = single_eval[name]
+    with open("output/evaluation_general_{}_{}.json".format(args.window, args.band), "w") as fp:
+        json.dump(evaluation, fp)
 
-    for subject, ds_test in test_datasets.items():
-        evaluation[subject] = dict(zip(model.metrics_names, model.evaluate(ds_test)))
-        for k, v in evaluation[subject].items():
-            evaluation[subject][k] = float(v)
 
-    with open("output/eval.json", "w") as fp:
+def evaluate_transfer():
+    evaluation = {}
+    for name in subjects:
+        def transfer_filter(paths):
+            return [path for path in paths if path.split("_-_")[1] == name]
+
+        transfer_model = tf.keras.models.load_model(os.path.join(cwd, "output"
+                                                                      "model_transfer_{}_{}_{}.h5".format(name,
+                                                                                                          args.window,
+                                                                                                          args.band)))
+        single_eval = test_model(model=transfer_model, eval_location="", data_folder=data_folder, batch_size=args.batch,
+                                 time_window=args.window, batch_equalizer=Default2EnvBatchEqualizer(),
+                                 filters=[transfer_filter], save=False)
+
+        evaluation[name] = single_eval[name]
+    with open("output/evaluation_transfer_{}_{}.json".format(args.window, args.band), "w") as fp:
         json.dump(evaluation, fp)
 
 
 if __name__ == "__main__":
-    evaluate()
+    parser = argparse.ArgumentParser(description='Evaluate the subject-specific general and transfer models')
+    parser.add_argument('--window', '--w', metavar='TIME_WINDOW', type=int,
+                        help='size of window to train the model on', required=True)
+    parser.add_argument('--batch', '--b', metavar='BATCH_SIZE', type=int,
+                        help='size of batch to use during training', required=True)
+    parser.add_argument('--band', '--B', metavar='BAND', type=str, choices=['full', 'delta', 'theta', 'delta_theta'],
+                        help='which band(s) to use for training', required=True)
+    args = parser.parse_args()
+
+    cwd = os.path.dirname(os.path.abspath(__file__))
+    root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    data_folder = os.path.join(root, "dataset", args.band)
+
+    evaluate_general()
+    evaluate_transfer()
